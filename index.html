@@ -34,10 +34,10 @@
         filter.frequency.value = 10000;
         
         const sampleFiles = [
-    "samples/sample1.wav",
-    "samples/sample2.wav",
-    "samples/sample3.wav",
-    "samples/sample4.wav"
+    "sample1.wav",
+    "sample2.wav",
+    "sample3.wav",
+    "sample4.wav"
 ];
 
         let buffers = [];
@@ -52,12 +52,18 @@
         }
 
         function playSample(index) {
-            if (!buffers[index]) return;
-            const source = audioContext.createBufferSource();
-            source.buffer = buffers[index];
-            source.connect(filter).connect(audioContext.destination);
-            source.start();
-        }
+    if (audioContext.state === "suspended") {
+        audioContext.resume(); // Ensure the AudioContext is running
+    }
+    
+    if (!buffers[index]) return;
+    
+    const source = audioContext.createBufferSource();
+    source.buffer = buffers[index];
+    source.connect(filter).connect(audioContext.destination);
+    source.start();
+}
+
 
         function updateFilter() {
             const filterControl = document.getElementById("filter");

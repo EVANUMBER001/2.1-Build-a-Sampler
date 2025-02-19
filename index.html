@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Audio Sampler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Sampler with Effects</h1>
+    <p>Click a button to play a sample. Adjust the filter for effect.</p>
+    <button onclick="playSample(0)">Sample 1</button>
+    <button onclick="playSample(1)">Sample 2</button>
+    <button onclick="playSample(2)">Sample 3</button>
+    <button onclick="playSample(3)">Sample 4</button>
+    <br><br>
+    <label for="filter">Low-Pass Filter Frequency:</label>
+    <input type="range" id="filter" min="100" max="20000" value="10000" step="100" onchange="updateFilter()">
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const filter = audioContext.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 10000;
+        
+        const sampleFiles = [
+    "samples/sample1.wav",
+    "samples/sample2.wav",
+    "samples/sample3.wav",
+    "samples/sample4.wav"
+];
+
+        let buffers = [];
+
+        async function loadSamples() {
+            for (let file of sampleFiles) {
+                const response = await fetch(file);
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                buffers.push(audioBuffer);
+            }
+        }
+
+        function playSample(index) {
+            if (!buffers[index]) return;
+            const source = audioContext.createBufferSource();
+            source.buffer = buffers[index];
+            source.connect(filter).connect(audioContext.destination);
+            source.start();
+        }
+
+        function updateFilter() {
+            const filterControl = document.getElementById("filter");
+            filter.frequency.value = filterControl.value;
+        }
+
+        loadSamples();
+    </script>
+</body>
+</html>
